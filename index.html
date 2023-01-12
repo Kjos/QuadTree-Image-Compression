@@ -1,0 +1,88 @@
+<html>
+<title>qt</title>
+<canvas id="canvas"></canvas>
+<canvas id="canvas2"></canvas>
+<img id="img" src="img/sample.jpg"></img>
+<img id="img2" src="img/sample.png"></img>
+<script>
+
+var width;
+var height;
+
+var quality = 1.0 - 0.55; // 0-100
+var mb = 0;
+
+
+var calc = function(res,ctx,x,y,w,h) {
+	var data = ctx.getImageData(x, y, w, h);
+	var sr = data[0];
+	var sg = data[1];
+	var sb = data[2];
+	var sa = data[3];
+	var skip = true;
+	for (i = 0; i < a.length; i+=4) {
+		var r = data[i];
+		var g = data[i+1];
+		var b = data[i+2];
+		var a = data[i+3];
+		
+		if (Math.abs(sr + sg + sb + sa - r - g - b - a) > 255.0 * 4.0 * quality) {
+			skip = false;
+		}
+		
+	}
+	if (skip) {
+		return;
+	}
+	
+	for (i = 0; i < data.length; i++) {
+		var a = data[i];
+		res[res.length] = a;
+	}
+
+	w/=2.0;
+	h/=2.0;
+	
+	if (w < 1.01 || h < 1.01) return;
+	
+	for (ix = 0; ix < 2; ix++) {
+		for (iy = 0; iy < 2; iy++) {
+			calc(res, ctx, ix * w, iy * h, w, h);
+		}
+	}
+}
+
+var calc = function(ctx,w,h) {
+	var res = [];
+	calc(res,ctx,0,0,w,h);
+	return res;
+}
+
+function encrypt(canvas, img) {
+	img.crossOrigin = "anonymous";
+	var ctx = canvas.getContext("2d");
+	img.addEventListener("load", function() {
+		canvas.width = img.width;
+		canvas.height = img.height;
+		ctx.drawImage(img,0 ,0);
+		
+		var data = calc(ctx,img.width,img.height);
+		mb = data.length;
+		console.log(canvas.width + "w" + canvas.height + "h");
+		console.log((canvas.width * canvas.height * 4 / 1024) + " KB uncompressed");
+		console.log(mb / 1024 + " KB");
+		console.log("---------------------");
+	});
+}
+
+var canvas = document.getElementById("canvas");
+var img = document.getElementById("img");
+var canvas2 = document.getElementById("canvas");
+var img2 = document.getElementById("img2");
+
+encrypt(canvas, img);
+encrypt(canvas2, img2);
+
+</script>
+
+</html>
