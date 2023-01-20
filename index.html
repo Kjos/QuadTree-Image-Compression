@@ -9,18 +9,30 @@
 var width;
 var height;
 
-var quality = 0.1; // 0-1
+var quality = 0.5; // 0-1
 var mb = 0;
 
 
 var calc = function(res,ctx,x,y,w,h) {
-	console.log(w)
+	console.log(w);
 	var data = ctx.getImageData(x, y, w, h).data;
 	var sr = data[0];
 	var sg = data[1];
 	var sb = data[2];
 	var sa = data[3];
 	var skip = true;
+	for (i = 4; i < data.length; i+=4) {
+		sr += data[i];
+		sg += data[i+1];
+		sb += data[i+2];
+		sa += data[i+3];
+		
+	}
+	sr /= data.length;
+	sg /= data.length;
+	sb /= data.length;
+	sa /= data.length;
+	
 	for (i = 4; i < data.length; i+=4) {
 		var r = data[i];
 		var g = data[i+1];
@@ -29,6 +41,7 @@ var calc = function(res,ctx,x,y,w,h) {
 		
 		if (skip && Math.abs(sr + sg + sb + sa - r - g - b - a) > 255.0 * 4.0 * quality) {
 			skip = false;
+			break
 		}
 	}
 	if (skip) {
